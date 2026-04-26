@@ -24,6 +24,9 @@ class YOLODetector:
         
         if img is None:
             return {}, ""
+            
+        # Flip image horizontally for a natural mirror effect
+        img = cv2.flip(img, 1)
 
         # Prepare image for OpenCV DNN (YOLOv8 was exported at 320x320)
         blob = cv2.dnn.blobFromImage(img, 1/255.0, (320, 320), swapRB=True, crop=False)
