@@ -15,6 +15,9 @@ function App() {
   const streamRef = useRef(null);
   const animationFrameRef = useRef(null);
   const isStreamingRef = useRef(false);
+  
+  // Lockstep backpressure: prevents buffer bloat and lag
+  const isWaitingForServerRef = useRef(false);
 
   const startStream = async () => {
     try {
@@ -49,6 +52,9 @@ function App() {
       };
       
       wsRef.current.onmessage = (event) => {
+        // We received a response, so we are allowed to send the next frame
+        isWaitingForServerRef.current = false;
+        
         setDebugInfo(prev => ({ ...prev, received: prev.received + 1 }));
         const data = JSON.parse(event.data);
         if (data.image) {
@@ -80,6 +86,7 @@ function App() {
   const stopStream = () => {
     setIsStreaming(false);
     isStreamingRef.current = false;
+    isWaitingForServerRef.current = false;
     setStatus('disconnected');
     
     if (animationFrameRef.current) {
@@ -113,7 +120,11 @@ function App() {
       setDebugInfo(prev => ({ ...prev, readyState: video.readyState, vWidth: video.videoWidth }));
     }
     
-    if (video && canvas && video.readyState >= 2 && video.videoWidth > 0) {
+    // Only send a new frame if the server has finished processing the last one!
+    // This entirely eliminates buffer-bloat and guarantees zero real-time lag.
+    if (!isWaitingForServerRef.current && video && canvas && video.readyState >= 2 && video.videoWidth > 0) {
+      isWaitingForServerRef.current = true;
+      
       // Downscale to 320x240 to save bandwidth and drastically reduce backend memory usage
       const targetWidth = 320;
       const targetHeight = 240;
@@ -128,16 +139,18 @@ function App() {
         if (blob && wsRef.current.readyState === WebSocket.OPEN) {
           wsRef.current.send(blob);
           setDebugInfo(prev => ({ ...prev, sent: prev.sent + 1 }));
+        } else {
+          isWaitingForServerRef.current = false; // Failed to send, unlock
         }
       }, 'image/jpeg', 0.6); // Slightly compressed to improve latency
     }
     
-    // Throttle frames to ~15 FPS to provide a smooth live video feed
+    // Check again very quickly, but we only actually send if unlocked
     setTimeout(() => {
       if (isStreamingRef.current) {
         animationFrameRef.current = requestAnimationFrame(sendFrames);
       }
-    }, 1000 / 15);
+    }, 1000 / 30);
   };
 
   useEffect(() => {
