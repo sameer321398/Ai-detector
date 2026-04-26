@@ -132,12 +132,12 @@ function App() {
       }, 'image/jpeg', 0.6); // Slightly compressed to improve latency
     }
     
-    // Throttle frames to ~2 FPS to avoid overloading the free tier server
+    // Throttle frames to ~12 FPS for a smooth video feed now that ONNX backend is fast
     setTimeout(() => {
       if (isStreamingRef.current) {
         animationFrameRef.current = requestAnimationFrame(sendFrames);
       }
-    }, 1000 / 2);
+    }, 1000 / 12);
   };
 
   useEffect(() => {
