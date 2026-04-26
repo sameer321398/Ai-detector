@@ -7,6 +7,7 @@ function App() {
   const [errorMessage, setErrorMessage] = useState('');
   const [detections, setDetections] = useState([]);
   const [processedImg, setProcessedImg] = useState(null);
+  const [debugInfo, setDebugInfo] = useState({ sent: 0, received: 0, readyState: 0, vWidth: 0 });
   
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -48,6 +49,7 @@ function App() {
       };
       
       wsRef.current.onmessage = (event) => {
+        setDebugInfo(prev => ({ ...prev, received: prev.received + 1 }));
         const data = JSON.parse(event.data);
         if (data.image) {
           setProcessedImg(`data:image/jpeg;base64,${data.image}`);
@@ -107,6 +109,10 @@ function App() {
     const video = videoRef.current;
     const canvas = canvasRef.current;
     
+    if (video) {
+      setDebugInfo(prev => ({ ...prev, readyState: video.readyState, vWidth: video.videoWidth }));
+    }
+    
     if (video && canvas && video.readyState >= 2 && video.videoWidth > 0) {
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
@@ -117,6 +123,7 @@ function App() {
       canvas.toBlob((blob) => {
         if (blob && wsRef.current.readyState === WebSocket.OPEN) {
           wsRef.current.send(blob);
+          setDebugInfo(prev => ({ ...prev, sent: prev.sent + 1 }));
         }
       }, 'image/jpeg', 0.6); // Slightly compressed to improve latency
     }
@@ -154,6 +161,10 @@ function App() {
                 Error: {errorMessage}
               </div>
             )}
+            
+            <div style={{ fontSize: '0.8rem', color: 'gray' }}>
+              Debug - Sent: {debugInfo.sent} | Rcvd: {debugInfo.received} | vReady: {debugInfo.readyState} | vWidth: {debugInfo.vWidth}
+            </div>
             
             <div className="video-wrapper">
               {/* Hidden video and canvas for capturing frames */}
