@@ -1,7 +1,6 @@
 fastapi
 uvicorn[standard]
 websockets
-ultralytics
 opencv-python-headless
 python-multipart
 pydantic-settings
