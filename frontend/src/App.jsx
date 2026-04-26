@@ -128,12 +128,12 @@ function App() {
       }, 'image/jpeg', 0.6); // Slightly compressed to improve latency
     }
     
-    // Throttle frames to ~15 FPS to avoid overloading server
+    // Throttle frames to ~2 FPS to avoid overloading the free tier server
     setTimeout(() => {
       if (isStreamingRef.current) {
         animationFrameRef.current = requestAnimationFrame(sendFrames);
       }
-    }, 1000 / 15);
+    }, 1000 / 2);
   };
 
   useEffect(() => {

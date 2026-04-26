@@ -27,15 +27,24 @@ class YOLODetector:
     def process_frame(self, image_bytes: bytes) -> tuple[dict, str]:
         # Convert bytes to numpy array
         np_arr = np.frombuffer(image_bytes, np.uint8)
-        print(f"Received bytes length: {len(image_bytes)}")
         img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
         
         if img is None:
-            print("Failed to decode image!")
             return {}, ""
 
-        # Perform detection
-        results = self.model(img, verbose=False)
+        # BYPASS YOLO TEMPORARILY TO TEST IF IT'S CAUSING THE HANG
+        # results = self.model(img, verbose=False)
+        
+        # Parse results and draw boxes
+        detections = [{"label": "YOLO Bypassed (Testing)", "confidence": 1.0, "box": [50, 50, 200, 200]}]
+        cv2.rectangle(img, (50, 50), (200, 200), (0, 0, 255), 2)
+        cv2.putText(img, "YOLO Bypassed", (50, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+
+        # Encode image back to JPEG and Base64
+        _, buffer = cv2.imencode('.jpg', img)
+        img_base64 = base64.b64encode(buffer).decode('utf-8')
+        
+        return {"detections": detections}, img_base64
         
         # Parse results and draw boxes
         detections = []
