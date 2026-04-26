@@ -4,6 +4,7 @@ import { Camera, StopCircle, Zap, ShieldAlert, Activity } from 'lucide-react';
 function App() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [status, setStatus] = useState('disconnected'); // disconnected, connecting, connected, error
+  const [errorMessage, setErrorMessage] = useState('');
   const [detections, setDetections] = useState([]);
   const [processedImg, setProcessedImg] = useState(null);
   
@@ -17,6 +18,7 @@ function App() {
   const startStream = async () => {
     try {
       setStatus('connecting');
+      setErrorMessage('');
       // Get user media
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: { width: 640, height: 480, facingMode: 'environment' } 
@@ -61,12 +63,14 @@ function App() {
       
       wsRef.current.onerror = (error) => {
         console.error("WebSocket error:", error);
+        setErrorMessage(`WebSocket connection failed at ${wsUrl}. Check if server is running.`);
         setStatus('error');
         stopStream();
       };
       
     } catch (err) {
       console.error("Error accessing camera or connecting to server:", err);
+      setErrorMessage(err.message || err.name || String(err));
       setStatus('error');
     }
   };
@@ -144,6 +148,12 @@ function App() {
               <div className={`status-indicator ${status === 'connected' ? 'active' : status === 'error' ? 'error' : ''}`}></div>
               {status === 'connected' ? 'System Active' : status === 'connecting' ? 'Connecting...' : status === 'error' ? 'Connection Error' : 'System Standby'}
             </div>
+            
+            {errorMessage && (
+              <div style={{ color: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', padding: '0.5rem 1rem', borderRadius: '8px', fontSize: '0.9rem', width: '100%', textAlign: 'center' }}>
+                Error: {errorMessage}
+              </div>
+            )}
             
             <div className="video-wrapper">
               {/* Hidden video and canvas for capturing frames */}
