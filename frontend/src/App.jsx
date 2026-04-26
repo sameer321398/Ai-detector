@@ -28,12 +28,14 @@ function App() {
       // Explicitly play the video
       await videoRef.current.play();
       
-      // Connect to WebSocket (dynamically use the production URL if not on localhost)
+      // Connect to WebSocket using the current host (works for unified deployment)
       const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const defaultHost = window.location.hostname === 'localhost' ? 'localhost:8000' : 'YOUR-RENDER-BACKEND.onrender.com';
+      const wsHost = window.location.host; // Will be localhost:5173 locally, or render URL in prod
       
-      // Use environment variable if provided, otherwise fallback to default
-      const wsUrl = import.meta.env.VITE_WS_URL || `${wsProtocol}//${defaultHost}/api/ws/detect`;
+      // If we're running the Vite dev server (port 5173), point to the backend port 8000
+      const finalHost = wsHost.includes('5173') ? 'localhost:8000' : wsHost;
+      
+      const wsUrl = `${wsProtocol}//${finalHost}/api/ws/detect`;
       wsRef.current = new WebSocket(wsUrl);
       
       wsRef.current.onopen = () => {
