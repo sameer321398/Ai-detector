@@ -30,9 +30,11 @@ function App() {
       
       // Connect to WebSocket (dynamically use the production URL if not on localhost)
       const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      // Replace this URL with your Render backend URL once it's deployed!
-      const backendHost = window.location.hostname === 'localhost' ? 'localhost:8000' : 'YOUR-RENDER-BACKEND-URL.onrender.com';
-      wsRef.current = new WebSocket(`${wsProtocol}//${backendHost}/api/ws/detect`);
+      const defaultHost = window.location.hostname === 'localhost' ? 'localhost:8000' : 'YOUR-RENDER-BACKEND.onrender.com';
+      
+      // Use environment variable if provided, otherwise fallback to default
+      const wsUrl = import.meta.env.VITE_WS_URL || `${wsProtocol}//${defaultHost}/api/ws/detect`;
+      wsRef.current = new WebSocket(wsUrl);
       
       wsRef.current.onopen = () => {
         setStatus('connected');
