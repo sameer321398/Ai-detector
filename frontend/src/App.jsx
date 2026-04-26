@@ -162,10 +162,6 @@ function App() {
               </div>
             )}
             
-            <div style={{ fontSize: '0.8rem', color: 'gray' }}>
-              Debug - Sent: {debugInfo.sent} | Rcvd: {debugInfo.received} | vReady: {debugInfo.readyState} | vWidth: {debugInfo.vWidth}
-            </div>
-            
             <div className="video-wrapper">
               {/* Hidden video and canvas for capturing frames */}
               <video 

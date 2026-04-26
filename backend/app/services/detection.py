@@ -32,19 +32,8 @@ class YOLODetector:
         if img is None:
             return {}, ""
 
-        # BYPASS YOLO TEMPORARILY TO TEST IF IT'S CAUSING THE HANG
-        # results = self.model(img, verbose=False)
-        
-        # Parse results and draw boxes
-        detections = [{"label": "YOLO Bypassed (Testing)", "confidence": 1.0, "box": [50, 50, 200, 200]}]
-        cv2.rectangle(img, (50, 50), (200, 200), (0, 0, 255), 2)
-        cv2.putText(img, "YOLO Bypassed", (50, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
-
-        # Encode image back to JPEG and Base64
-        _, buffer = cv2.imencode('.jpg', img)
-        img_base64 = base64.b64encode(buffer).decode('utf-8')
-        
-        return {"detections": detections}, img_base64
+        # Perform detection
+        results = self.model(img, verbose=False)
         
         # Parse results and draw boxes
         detections = []
