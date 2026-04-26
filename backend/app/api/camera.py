@@ -1,4 +1,5 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from fastapi.concurrency import run_in_threadpool
 from ..services.detection import detector
 import json
 
@@ -13,8 +14,8 @@ async def websocket_endpoint(websocket: WebSocket):
                 # Receive frame as bytes
                 data = await websocket.receive_bytes()
                 
-                # Process frame using YOLO detector
-                results, processed_img_base64 = detector.process_frame(data)
+                # Process frame using YOLO detector in a threadpool to prevent blocking the async event loop!
+                results, processed_img_base64 = await run_in_threadpool(detector.process_frame, data)
                 
                 # Send results back
                 response = {

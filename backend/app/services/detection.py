@@ -5,12 +5,20 @@ import os
 
 import torch
 
+# Prevent OpenCV and PyTorch from causing severe threading deadlocks on Linux containers
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
+os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
+os.environ["NUMEXPR_NUM_THREADS"] = "1"
+
 # Set YOLO to use the temporary directory on Render to prevent config warnings
 os.environ["YOLO_CONFIG_DIR"] = "/tmp"
 os.environ["YOLO_DATA_DIR"] = "/tmp"
 
-# Prevent PyTorch from spawning too many threads on small instances (prevents freezing)
+# Prevent PyTorch from spawning too many threads
 torch.set_num_threads(1)
+cv2.setNumThreads(1)
 
 from ultralytics import YOLO
 
