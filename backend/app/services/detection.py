@@ -1,6 +1,12 @@
 import cv2
 import numpy as np
 import base64
+import os
+
+# Set YOLO to use the temporary directory on Render to prevent config warnings
+os.environ["YOLO_CONFIG_DIR"] = "/tmp"
+os.environ["YOLO_DATA_DIR"] = "/tmp"
+
 from ultralytics import YOLO
 
 class YOLODetector:
