@@ -28,8 +28,11 @@ function App() {
       // Explicitly play the video
       await videoRef.current.play();
       
-      // Connect to WebSocket
-      wsRef.current = new WebSocket('ws://localhost:8000/api/ws/detect');
+      // Connect to WebSocket (dynamically use the production URL if not on localhost)
+      const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      // Replace this URL with your Render backend URL once it's deployed!
+      const backendHost = window.location.hostname === 'localhost' ? 'localhost:8000' : 'YOUR-RENDER-BACKEND-URL.onrender.com';
+      wsRef.current = new WebSocket(`${wsProtocol}//${backendHost}/api/ws/detect`);
       
       wsRef.current.onopen = () => {
         setStatus('connected');
